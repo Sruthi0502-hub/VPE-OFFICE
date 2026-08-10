@@ -1,0 +1,1225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>The Office of the VPE</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#152238; --navy-2:#1e3050; --gold:#c9973f; --gold-soft:#e4c07f;
+    --teal:#3f7f78; --paper:#f6f3ec; --ink:#1b1b1b; --ink-soft:#5a5a52;
+    --line:#dcd5c4; --card:#ffffff; --danger:#b5533c;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:'IBM Plex Sans',sans-serif;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:1180px;margin:0 auto;padding:0 28px 100px;}
+
+  header{background:linear-gradient(135deg,var(--navy) 0%,var(--navy-2) 100%);color:var(--paper);padding:44px 28px 34px;margin-bottom:36px;}
+  header .wrap{padding:0;}
+  .eyebrow{font-family:'IBM Plex Mono',monospace;font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold-soft);display:flex;align-items:center;gap:10px;}
+  .eyebrow::before{content:"";width:22px;height:1px;background:var(--gold-soft);display:inline-block;}
+  h1{font-family:'Fraunces',serif;font-weight:600;font-size:clamp(30px,4vw,44px);margin:10px 0 6px;letter-spacing:-.01em;}
+  .sub{color:#c7cede;font-size:15px;max-width:640px;line-height:1.5;}
+  .meta-row{display:flex;gap:26px;flex-wrap:wrap;margin-top:26px;padding-top:20px;border-top:1px solid rgba(255,255,255,.14);font-size:13px;color:#aeb7cc;}
+  .meta-row b{color:var(--gold-soft);font-weight:600;}
+
+  .save-status{position:fixed;top:16px;right:16px;background:var(--navy);color:var(--gold-soft);font-family:'IBM Plex Mono',monospace;font-size:11px;padding:7px 13px;border-radius:2px;opacity:0;transition:opacity .25s ease;z-index:250;letter-spacing:.04em;}
+  .save-status[aria-live]{display:block;}
+  .save-status.show{opacity:1;}
+
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:40px;}
+  .kpi{background:var(--card);border:1px solid var(--line);border-radius:2px;padding:20px 20px 18px;position:relative;overflow:hidden;}
+  .kpi::before{content:"";position:absolute;top:0;left:0;width:3px;height:100%;background:var(--gold);}
+  .kpi .num{font-family:'Fraunces',serif;font-size:36px;font-weight:600;line-height:1;color:var(--navy);}
+  .kpi .lbl{font-size:12px;color:var(--ink-soft);margin-top:8px;text-transform:uppercase;letter-spacing:.06em;}
+
+  section{margin-bottom:44px;}
+  .section-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:18px;border-bottom:1px solid var(--line);padding-bottom:10px;flex-wrap:wrap;gap:10px;}
+  .section-head h2{font-family:'Fraunces',serif;font-size:21px;font-weight:600;margin:0;color:var(--navy);}
+  .section-head .note{font-size:12.5px;color:var(--ink-soft);font-family:'IBM Plex Mono',monospace;}
+
+  .btn{font-family:'IBM Plex Sans',sans-serif;font-size:12.5px;font-weight:600;padding:8px 15px;border:1px solid var(--navy);background:var(--navy);color:#fff;cursor:pointer;border-radius:2px;letter-spacing:.01em;transition:opacity .15s;}
+  .btn:hover{opacity:.85;}
+  .btn:focus-visible, .chip:focus-visible, .cellwrap:focus-visible, .attendance-select:focus-visible, input:focus-visible, select:focus-visible, button:focus-visible{outline:2px solid var(--navy);outline-offset:2px;}
+  .btn.ghost{background:transparent;color:var(--navy);}
+  .btn.danger{background:transparent;color:var(--danger);border-color:var(--danger);}
+  .btn.small{padding:4px 10px;font-size:11.5px;}
+  .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;}
+
+  .grid-2{display:grid;grid-template-columns:1.3fr 1fr;gap:22px;}
+  .panel{background:var(--card);border:1px solid var(--line);padding:22px;border-radius:2px;}
+  .bar-row{display:flex;align-items:center;gap:12px;margin-bottom:12px;}
+  .bar-row:last-child{margin-bottom:0;}
+  .bar-label{width:170px;font-size:13px;flex-shrink:0;}
+  .bar-track{flex:1;height:20px;background:#f0ece1;position:relative;border-radius:1px;}
+  .bar-fill{height:100%;background:var(--teal);border-radius:1px;transition:width .4s ease;}
+  .bar-fill.gold{background:var(--gold);}
+  .bar-count{width:26px;text-align:right;font-family:'IBM Plex Mono',monospace;font-size:12.5px;color:var(--ink-soft);}
+
+  .heatmap-wrap{background:var(--card);border:1px solid var(--line);padding:22px;}
+  .heatmap-scroll{overflow-x:auto;padding-bottom:4px;}
+  table.heat{border-collapse:collapse;font-size:12.5px;}
+  table.heat th{font-family:'IBM Plex Mono',monospace;font-weight:500;font-size:10.5px;text-transform:uppercase;letter-spacing:.03em;color:var(--ink-soft);padding:6px 7px;text-align:center;border-bottom:2px solid var(--line);}
+  table.heat td{padding:4px 5px;text-align:center;border-bottom:1px solid #ede8db;white-space:nowrap;}
+  th.sticky-col, td.sticky-col{
+    position:sticky;left:0;z-index:2;
+    background:var(--card);text-align:left;min-width:168px;max-width:168px;
+    padding-right:14px;font-weight:500;color:var(--ink);
+    box-shadow:2px 0 4px -2px rgba(0,0,0,.12);
+  }
+  table.heat tr.me td.sticky-col{background:#fbf7ec;}
+  th.sticky-col{z-index:3;background:var(--card);}
+  th.group-start, td.group-start{border-left:2px solid var(--line);}
+  .cell{display:inline-block;min-width:62px;max-width:78px;padding:4px 5px;border-radius:2px;font-size:10.5px;color:#fff;background:var(--teal);cursor:text;border:1px solid transparent;outline:none;overflow:hidden;text-overflow:ellipsis;}
+  .cell:hover{border-color:rgba(0,0,0,.25);}
+  .cell:focus{border-color:var(--navy);box-shadow:0 0 0 2px rgba(21,34,56,.15);max-width:none;white-space:normal;}
+  .cell.empty{background:transparent;color:var(--ink-soft);min-width:46px;border:1px dashed var(--line);}
+  .cell.empty:focus, .cell.empty:hover{border-color:var(--navy);color:var(--ink);}
+  .cell.tmod{background:var(--gold);color:#1b1b1b;}
+  .cell.speaker{background:var(--navy);}
+  .cell.eval{background:var(--danger);}
+  tr.me td:first-child{color:var(--gold);font-weight:700;}
+  tr.me{background:#fbf7ec;}
+  .legend{display:flex;gap:16px;flex-wrap:wrap;margin-top:14px;font-size:11.5px;color:var(--ink-soft);}
+  .legend span{display:inline-flex;align-items:center;gap:6px;}
+  .legend i{width:11px;height:11px;border-radius:2px;display:inline-block;}
+
+  .attendance-cell{display:inline-block;min-width:56px;padding:4px 6px;border-radius:2px;font-size:10.5px;border:1px solid transparent;background:transparent;color:var(--ink-soft);cursor:pointer;}
+  .attendance-cell:hover{border-color:var(--line);background:#fffefb;}
+  .attendance-cell.present{background:var(--teal);color:#fff;}
+  .attendance-cell.absent{background:var(--danger);color:#fff;}
+  .attendance-cell.excused{background:var(--gold);color:#1b1b1b;}
+  .attendance-cell.empty{background:transparent;color:var(--ink-soft);border:1px dashed var(--line);}
+  .suggestion-card{display:block;width:100%;text-align:left;padding:12px 14px;border:1px solid var(--line);background:#fff;border-radius:2px;margin-bottom:10px;cursor:pointer;}
+  .suggestion-card:hover{border-color:var(--navy);}
+  .suggestion-card.suggest-highlight{border-color:var(--gold);background:#fff8e2;}
+  .suggestion-card .meta{display:flex;justify-content:space-between;gap:8px;font-size:12px;color:var(--ink-soft);margin-top:6px;}
+  .progress-card{display:grid;gap:12px;}
+  .progress-row{display:flex;align-items:center;gap:12px;}
+  .progress-label{width:160px;font-size:13px;}
+  .progress-track{flex:1;height:18px;background:#f0ece1;border-radius:1px;overflow:hidden;}
+  .progress-fill{height:100%;background:var(--teal);transition:width .3s ease;}
+  .progress-fill.gold{background:var(--gold);}
+  .progress-row .count{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--ink-soft);}
+  tr.suggest-highlight td{background:#fff6d8 !important;}
+
+  .roster-wrap{background:var(--card);border:1px solid var(--line);}
+  .controls{display:flex;gap:10px;padding:16px 20px;border-bottom:1px solid var(--line);flex-wrap:wrap;align-items:center;}
+  input#search{flex:1;min-width:200px;padding:9px 12px;border:1px solid var(--line);font-family:'IBM Plex Sans',sans-serif;font-size:13.5px;background:var(--paper);}
+  select#filterPathway{padding:9px 12px;border:1px solid var(--line);background:var(--paper);font-family:'IBM Plex Sans',sans-serif;font-size:13.5px;}
+  .table-scroll{overflow-x:auto;}
+  table.roster{width:100%;border-collapse:collapse;font-size:13.5px;min-width:980px;}
+  table.roster th{text-align:left;font-family:'IBM Plex Mono',monospace;font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-soft);padding:10px 14px;border-bottom:1px solid var(--line);cursor:pointer;user-select:none;white-space:nowrap;}
+  table.roster th:hover{color:var(--navy);}
+  table.roster td{padding:4px 6px;border-bottom:1px solid #ede8db;vertical-align:middle;}
+  table.roster tr:hover td{background:#fbf9f3;}
+  table.roster tr.me td{background:#fbf7ec;}
+  .cellwrap{padding:7px 8px;border-radius:2px;border:1px solid transparent;min-height:16px;outline:none;}
+  .cellwrap:hover{border-color:var(--line);background:#fffefb;}
+  .cellwrap:focus{border-color:var(--navy);background:#fff;box-shadow:0 0 0 2px rgba(21,34,56,.1);}
+  .cellwrap.name{font-weight:600;}
+  td.pathway-td select, td.level-td input{width:100%;padding:7px 8px;border:1px solid transparent;background:transparent;font-family:'IBM Plex Sans',sans-serif;font-size:13.5px;border-radius:2px;}
+  td.pathway-td select:hover, td.level-td input:hover{border-color:var(--line);background:#fffefb;}
+  td.pathway-td select:focus, td.level-td input:focus{border-color:var(--navy);background:#fff;outline:none;}
+  td.level-td input{width:48px;}
+  .tag{display:inline-block;font-size:11px;padding:2px 8px;border-radius:10px;background:#eef0ea;color:var(--teal);font-family:'IBM Plex Mono',monospace;white-space:nowrap;}
+  .goal-tag{background:#f4e8d4;color:#8a6420;}
+  .status-dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:6px;flex-shrink:0;}
+  .dot-done{background:var(--teal);}
+  .dot-pending{background:var(--danger);}
+  .del-btn{background:none;border:none;color:var(--danger);cursor:pointer;font-size:16px;line-height:1;padding:6px;opacity:.5;}
+  .del-btn:hover{opacity:1;}
+  .col-hint{font-weight:400;text-transform:none;font-size:9.5px;color:var(--ink-soft);opacity:.7;}
+
+  footer{text-align:center;font-size:11.5px;color:var(--ink-soft);font-family:'IBM Plex Mono',monospace;padding-top:20px;border-top:1px solid var(--line);}
+
+  #chatToggle{
+    position:fixed;bottom:24px;right:24px;z-index:300;
+    background:var(--navy);color:#fff;border:none;border-radius:50px;
+    padding:14px 20px 14px 16px;display:flex;align-items:center;gap:9px;
+    cursor:pointer;box-shadow:0 8px 24px rgba(21,34,56,.35);
+    font-family:'IBM Plex Sans',sans-serif;font-size:13.5px;font-weight:600;
+    transition:transform .15s ease;
+  }
+  #chatToggle:hover{transform:translateY(-2px);}
+  #chatToggle svg{flex-shrink:0;}
+
+  #chatPanel{
+    position:fixed;bottom:24px;right:24px;z-index:300;
+    width:380px;max-width:calc(100vw - 32px);height:min(560px, calc(100vh - 48px));
+    background:var(--card);border-radius:8px;box-shadow:0 20px 60px rgba(0,0,0,.35);
+    display:none;flex-direction:column;overflow:hidden;border:1px solid var(--line);
+  }
+  #chatPanel.open{display:flex;}
+  .chat-header{background:linear-gradient(135deg,var(--navy) 0%,var(--navy-2) 100%);color:#fff;padding:16px 18px;display:flex;justify-content:space-between;align-items:center;}
+  .chat-header .title{font-family:'Fraunces',serif;font-size:16px;font-weight:600;}
+  .chat-header .subtitle{font-size:11px;color:var(--gold-soft);font-family:'IBM Plex Mono',monospace;margin-top:2px;}
+  .chat-close{background:none;border:none;color:#fff;font-size:20px;cursor:pointer;opacity:.7;line-height:1;padding:4px;}
+  .chat-close:hover{opacity:1;}
+  .chat-messages{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px;background:var(--paper);}
+  .msg{max-width:85%;padding:10px 13px;border-radius:10px;font-size:13.5px;line-height:1.45;}
+  .msg.user{align-self:flex-end;background:var(--navy);color:#fff;border-bottom-right-radius:2px;}
+  .msg.bot{align-self:flex-start;background:#fff;border:1px solid var(--line);color:var(--ink);border-bottom-left-radius:2px;white-space:pre-wrap;}
+  .msg.bot.thinking{color:var(--ink-soft);font-style:italic;}
+  .msg.bot.error{border-color:var(--danger);color:var(--danger);}
+  .chat-suggestions{padding:0 16px 12px;display:flex;flex-wrap:wrap;gap:6px;background:var(--paper);}
+  .chip{font-size:11px;padding:5px 10px;background:#fff;border:1px solid var(--line);border-radius:12px;cursor:pointer;color:var(--ink-soft);font-family:'IBM Plex Sans',sans-serif;}
+  .chip:hover{border-color:var(--navy);color:var(--navy);}
+  .chat-input-row{display:flex;gap:8px;padding:12px;border-top:1px solid var(--line);background:#fff;}
+  .chat-input-row input{flex:1;padding:10px 12px;border:1px solid var(--line);border-radius:20px;font-family:'IBM Plex Sans',sans-serif;font-size:13.5px;background:var(--paper);}
+  .chat-input-row input:focus{outline:none;border-color:var(--navy);}
+  .chat-send{background:var(--navy);color:#fff;border:none;border-radius:50%;width:38px;height:38px;flex-shrink:0;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+  .chat-send:hover{opacity:.85;}
+  .chat-send:disabled{opacity:.4;cursor:default;}
+
+  @media(max-width:820px){
+    .kpis{grid-template-columns:repeat(2,1fr);}
+    .grid-2{grid-template-columns:1fr;}
+    #chatPanel{width:calc(100vw - 24px);right:12px;bottom:12px;}
+    #chatToggle{right:16px;bottom:16px;}
+  }
+  @media(max-width:640px){
+    .wrap{padding:0 16px 80px;}
+    header{padding:32px 16px 24px;}
+    .meta-row{flex-direction:column;gap:8px;}
+    .kpis{grid-template-columns:1fr;}
+    .section-head{align-items:flex-start;}
+    .controls{flex-direction:column;align-items:stretch;}
+    input#search, select#filterPathway{width:100%;min-width:0;}
+    .progress-row{flex-direction:column;align-items:flex-start;gap:6px;}
+    .progress-label{width:auto;}
+    .progress-track{width:100%;}
+    .row-actions{display:flex;flex-wrap:wrap;gap:8px;}
+    .attendance-cell{min-width:58px;}
+    .cell{min-width:54px;}
+  }
+  @media print{
+    .no-print, .btn, .controls, #chatToggle, #chatPanel{display:none !important;}
+    body{background:#fff;}
+    .wrap{max-width:none;padding:0 12px 24px;}
+  }
+</style>
+</head>
+<body>
+
+<div class="save-status" id="saveStatus" aria-live="polite">Saved</div>
+
+<header>
+  <div class="wrap">
+    <div class="eyebrow">WERE KG Toastmasters Club</div>
+    <h1>The Office of the VPE</h1>
+    <div class="sub">Pathways, mentor assignments, meeting role participation and CSP goal tracking. Click any field to edit — it saves as you go.</div>
+    <div class="meta-row" id="metaRow"></div>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <div class="kpis" id="kpiRow"></div>
+
+  <section>
+    <div class="section-head">
+      <h2>Pathways &amp; Goal Levels</h2>
+      <span class="note" id="pathwayNote"></span>
+    </div>
+    <div class="grid-2">
+      <div class="panel">
+        <div style="font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-soft);margin-bottom:14px;">Pathway selected</div>
+        <div id="pathwayBars"></div>
+      </div>
+      <div class="panel">
+        <div style="font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-soft);margin-bottom:14px;">CSP goal level</div>
+        <div id="goalBars"></div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <h2>Attendance Tracker</h2>
+      <div class="section-actions no-print" style="display:flex;gap:10px;">
+        <button class="btn ghost small" id="exportExcelBtn">Export Excel</button>
+        <button class="btn ghost small" id="exportPdfBtn">Export PDF</button>
+      </div>
+    </div>
+    <div class="heatmap-wrap">
+      <div class="heatmap-scroll">
+        <table class="heat attendance-table" id="attendanceTable"></table>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <h2>Role Participation — M01&ndash;M27</h2>
+      <span class="note" id="heatNote">click any cell to type a role directly</span>
+    </div>
+    <div class="heatmap-wrap">
+      <div class="heatmap-scroll">
+        <table class="heat" id="heatTable"></table>
+      </div>
+      <div class="legend">
+        <span><i style="background:var(--gold);"></i>TMOD</span>
+        <span><i style="background:var(--navy);"></i>Prepared Speaker</span>
+        <span><i style="background:var(--danger);"></i>General Evaluator</span>
+        <span><i style="background:var(--teal);"></i>Other role</span>
+        <span><i style="background:transparent;border:1px dashed var(--line);"></i>No role that meeting</span>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <h2>Suggestions</h2>
+      <span class="note">click any card to jump to that member</span>
+    </div>
+    <div class="panel no-print" id="suggestionsList"></div>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <h2>Term Progress</h2>
+      <span class="note">refreshes as the roster changes</span>
+    </div>
+    <div class="panel" id="progressList"></div>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <h2>Full Roster — everything below is editable</h2>
+      <div style="display:flex;align-items:center;gap:14px;">
+        <span class="note" id="rosterCount"></span>
+        <button class="btn no-print" id="addMemberBtn">+ Add member</button>
+      </div>
+    </div>
+    <div class="roster-wrap">
+      <div class="controls no-print">
+        <label class="sr-only" for="search">Search roster</label>
+        <input type="text" id="search" placeholder="Search by name or mentor…" autocomplete="off" aria-label="Search roster">
+        <label class="sr-only" for="filterPathway">Filter by pathway</label>
+        <select id="filterPathway" aria-label="Filter by pathway"><option value="">All pathways</option></select>
+        <button type="button" class="btn ghost small no-print" id="resetBtn" aria-label="Reset roster to the original data">Reset to original data</button>
+      </div>
+      <div class="table-scroll">
+      <table class="roster">
+        <thead>
+          <tr>
+            <th data-key="name">Name</th>
+            <th data-key="pathway">Pathway <span class="col-hint">/ level</span></th>
+            <th data-key="mentor">Mentor <span class="col-hint">/ mobile</span></th>
+            <th data-key="roleCount">Roles</th>
+            <th data-key="iceStatus">Ice-Breaker <span class="col-hint">/ date</span></th>
+            <th data-key="goal">CSP Goal <span class="col-hint">/ description</span></th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="rosterBody"></tbody>
+      </table>
+      </div>
+    </div>
+  </section>
+
+  <footer>WERE KG Toastmasters · Office of the VPE · Edits save automatically to this device</footer>
+</div>
+
+<button type="button" id="chatToggle" class="no-print" aria-controls="chatPanel" aria-expanded="false">
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+  Ask the VPE Assistant
+</button>
+
+<div id="chatPanel" class="no-print">
+  <div class="chat-header">
+    <div>
+      <div class="title">VPE Assistant</div>
+      <div class="subtitle">knows your full roster</div>
+    </div>
+    <button type="button" class="chat-close" id="chatCloseBtn" aria-label="Close assistant panel">&times;</button>
+  </div>
+  <div class="chat-messages" id="chatMessages"></div>
+  <div class="chat-suggestions" id="chatSuggestions">
+    <div class="chip" data-q="Who hasn't taken any roles yet?">Who hasn't taken a role yet?</div>
+    <div class="chip" data-q="Which members are missing their ice-breaker speech?">Missing ice-breakers?</div>
+    <div class="chip" data-q="Which mentors don't have a mobile number on file?">Mentors missing contact info?</div>
+  </div>
+  <div class="chat-input-row">
+    <input type="text" id="chatInput" placeholder="Ask about the roster…" autocomplete="off" aria-label="Ask the VPE assistant" maxlength="220">
+    <button type="button" class="chat-send" id="chatSendBtn" aria-label="Send message">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+    </button>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.1/dist/xlsx.full.min.js" onerror="window.__xlsxLoadFailed=true"></script>
+<script>
+const SEED_MEMBERS = [{"name": "Shajitha S", "pathway": "Persusavive Influence", "level": 1, "mentor": "DTM Rakesh", "mobile": "98435 45464", "iceTitle": "The Middle Bench Girl", "iceDate": "Thursday, July 30, 2026", "roleMonths": [null, "Grammarian", "Prepared Speaker 01", "General Evaluvator", "Insight Curator", null, null, null, null, null], "roleCount": 4, "goal": "GOAL 6", "goalDesc": "One more Level 4 ,Path Completion , or DTM award achieved", "goalLevel": 4}, {"name": "Ajay Krishnan", "pathway": "Dynamic Leadership", "level": 1, "mentor": "TM Ramkumar", "mobile": "98433 22135", "iceTitle": "One Punch , One Code , One Talk", "iceDate": "Jul 23, 2026", "roleMonths": [null, "Prepared Speaker 03", "TMOD", "Grammarian", "Grammarian", null, null, null, null, null], "roleCount": 4, "goal": "GOAL 3", "goalDesc": "Two More Level 2 awards achieved", "goalLevel": 2}, {"name": "Sruthi S", "pathway": "Dynamic Leadership", "level": 1, "mentor": "TM Durai", "mobile": "73958 75636", "iceTitle": null, "iceDate": null, "roleMonths": ["Ah- Counter", "Timer", null, null, "Prepared Speaker 03", null, null, null, null, null], "roleCount": 3, "goal": "GOAL 4", "goalDesc": "Two Level 3 awards achieved", "goalLevel": 3}, {"name": "Devadharshini K", "pathway": "Visionary Communication", "level": 1, "mentor": "DTM Karthikeyan", "mobile": "93608 66599", "iceTitle": null, "iceDate": null, "roleMonths": ["Timer", "TTM", null, null, null, null, null, null, null, null], "roleCount": 2, "goal": "GOAL 2", "goalDesc": "Two Level 2 awards achieved", "goalLevel": 2}, {"name": "Janavarshini KG", "pathway": "Visionary Communication", "level": 1, "mentor": "DTM Karthikeyan", "mobile": "93608 66600", "iceTitle": "Becoming", "iceDate": "Jul 23, 2026", "roleMonths": ["TTM", "Prepared Speaker 02", null, "Reserve Speaker", null, null, null, null, null, null], "roleCount": 3, "goal": "GOAL 3", "goalDesc": "Two More Level 2 awards achieved", "goalLevel": 2}, {"name": "Mrithubashini S", "pathway": "Persusavive Influence", "level": 1, "mentor": "TM Vinoth", "mobile": null, "iceTitle": null, "iceDate": "Aug 06, 2026", "roleMonths": [null, null, null, "Prepared Speaker 02", "Ah- Counter", null, null, null, null, null], "roleCount": 2, "goal": "GOAL 4", "goalDesc": "Two Level 3 awards achieved", "goalLevel": 3}, {"name": "Benasir Begum J", "pathway": "Persusavive Influence", "level": 1, "mentor": "TM Kalaipriya", "mobile": "98944 02206", "iceTitle": "Finding Her Voice", "iceDate": "Thursday, July 16, 2026", "roleMonths": ["Prepared Speaker 01", null, null, "Timer", "General Evaluvator", null, null, null, null, null], "roleCount": 3, "goal": "GOAL 3", "goalDesc": "Two More Level 2 awards achieved", "goalLevel": 2}, {"name": "Kiruba Preetta J", "pathway": "Presentation Mastery", "level": 1, "mentor": "TM Surya", "mobile": null, "iceTitle": null, "iceDate": null, "roleMonths": [null, null, null, "TMOD", "Prepared Speaker 01", null, null, null, null, null], "roleCount": 2, "goal": "GOAL 1", "goalDesc": "Four Level 1 awards achieved", "goalLevel": 1}, {"name": "Subiksha R", "pathway": "Persusavive Influence", "level": 1, "mentor": "TM Mahalakshmi", "mobile": null, "iceTitle": "Beyond My Comfort Zone", "iceDate": "Thursday, July 30, 2026", "roleMonths": [null, "TMOD", "Prepared Speaker 03", null, null, null, null, null, null, null], "roleCount": 2, "goal": "GOAL 3", "goalDesc": "Two More Level 2 awards achieved", "goalLevel": 2}, {"name": "Benazeer Fathima A", "pathway": "Visionary Communication", "level": 1, "mentor": "TM Mahalakshmi", "mobile": null, "iceTitle": null, "iceDate": null, "roleMonths": [null, null, "Ah- Counter", null, null, null, null, null, null, null], "roleCount": 1, "goal": "GOAL 4", "goalDesc": "Two Level 3 awards achieved", "goalLevel": 3}, {"name": "Dharma R", "pathway": "Dynamic Leadership", "level": 1, "mentor": "TM Vairamuthu", "mobile": null, "iceTitle": null, "iceDate": null, "roleMonths": [null, "Ah- Counter", null, null, "Prepared Speaker 02", null, null, null, null, null], "roleCount": 2, "goal": "GOAL 2", "goalDesc": "Two Level 2 awards achieved", "goalLevel": 2}, {"name": "Daniel Prabhakaran SD", "pathway": "Persusavive Influence", "level": 1, "mentor": "DTM Janani", "mobile": "97909 30235", "iceTitle": "Beyond the Lines of Home", "iceDate": "Thursday, July 30, 2026", "roleMonths": ["TMOD", "General Evaluvator", "Prepared Speaker 02", "Insight Curator", "TTM", null, null, null, null, null], "roleCount": 5, "goal": "GOAL 6", "goalDesc": "One more Level 4 ,Path Completion , or DTM award achieved", "goalLevel": 4}, {"name": "Dharun Krishna R", "pathway": "Dynamic Leadership", "level": 1, "mentor": "DTM Rakesh", "mobile": "98435 45464", "iceTitle": "Power Of Success", "iceDate": "Jul 23, 2026", "roleMonths": ["Grammarian", "Prepared Speaker 01", "General Evaluvator", "TTM", null, null, null, null, null, null], "roleCount": 4, "goal": "GOAL 5", "goalDesc": "One Level 4 ,Path Completion , or DTM award achieved", "goalLevel": 4}, {"name": "Rahul S", "pathway": "Dynamic Leadership", "level": 1, "mentor": "DTM Janani", "mobile": "97909 30235", "iceTitle": null, "iceDate": "Aug 06, 2026", "roleMonths": [null, null, null, "Prepared Speaker 01", "Photography Master", null, null, null, null, null], "roleCount": 2, "goal": "GOAL 5", "goalDesc": "One Level 4 ,Path Completion , or DTM award achieved", "goalLevel": 4}, {"name": "Varun KJ", "pathway": "Dynamic Leadership", "level": 1, "mentor": "TM Amirta", "mobile": null, "iceTitle": null, "iceDate": null, "roleMonths": [null, null, null, null, null, null, null, null, null, null], "roleCount": 0, "goal": "GOAL 2", "goalDesc": "Two Level 2 awards achieved", "goalLevel": 2}, {"name": "Abinav D", "pathway": "Persusavive Influence", "level": 1, "mentor": "TM Shilpa", "mobile": null, "iceTitle": null, "iceDate": null, "roleMonths": ["Word Master", null, null, "Photography Master", null, null, null, null, null, null], "roleCount": 2, "goal": "GOAL 1", "goalDesc": "Four Level 1 awards achieved", "goalLevel": 1}, {"name": "Laksha T", "pathway": "Dynamic Leadership", "level": 1, "mentor": "TM Mohini", "mobile": null, "iceTitle": null, "iceDate": null, "roleMonths": ["Listening Master", null, "Timer", null, "TMOD", null, null, null, null, null], "roleCount": 3, "goal": "GOAL 1", "goalDesc": "Four Level 1 awards achieved", "goalLevel": 1}, {"name": "Sharal M", "pathway": "Visionary Communication", "level": 1, "mentor": "TM Jonathan", "mobile": "95663 42740", "iceTitle": null, "iceDate": null, "roleMonths": [null, null, null, null, "Timer", null, null, null, null, null], "roleCount": 1, "goal": "GOAL 1", "goalDesc": "Four Level 1 awards achieved", "goalLevel": 1}, {"name": "Sasvitha G", "pathway": "Dynamic Leadership", "level": 1, "mentor": "TM Shanthini", "mobile": null, "iceTitle": null, "iceDate": null, "roleMonths": [null, null, null, null, null, null, null, null, null, null], "roleCount": 0, "goal": "GOAL 4", "goalDesc": "Two Level 3 awards achieved", "goalLevel": 3}, {"name": "Praveen P", "pathway": "Dynamic Leadership", "level": 1, "mentor": "TM Mohini", "mobile": null, "iceTitle": null, "iceDate": null, "roleMonths": [null, null, null, null, null, null, null, null, null, null], "roleCount": 0, "goal": "GOAL 1", "goalDesc": "Four Level 1 awards achieved", "goalLevel": 1}, {"name": "Harishwa S", "pathway": "Engaging Humor", "level": 1, "mentor": "TM Kalaipriya", "mobile": "98944 02206", "iceTitle": null, "iceDate": "Aug 06, 2026", "roleMonths": [null, null, "TTM", null, "Prepared Speaker 04", null, null, null, null, null], "roleCount": 2, "goal": "GOAL 1", "goalDesc": "Four Level 1 awards achieved", "goalLevel": 1}, {"name": "Snega Mithra SM", "pathway": "Presentation Mastery", "level": 1, "mentor": "TM Ganga", "mobile": null, "iceTitle": null, "iceDate": null, "roleMonths": [null, null, "Grammarian", "Ah- Counter", null, null, null, null, null, null], "roleCount": 2, "goal": "GOAL 1", "goalDesc": "Four Level 1 awards achieved", "goalLevel": 1}];
+const ME = "Daniel Prabhakaran SD";
+const STORAGE_KEY = "vpe-dashboard-members";
+const TOTAL_MEETINGS = 27;
+const PATHWAYS = ["Persusavive Influence","Dynamic Leadership","Visionary Communication","Presentation Mastery","Engaging Humor","Motivational Strategies","Effective Coaching","Team Collaboration","Innovative Planning","Strategic Relationships"];
+
+let MEMBERS = [];
+let sortKey = 'name';
+let sortDir = 1;
+let chatHistory = [];
+let highlightedSuggestionId = null;
+let renderFrame = null;
+let chatInitialized = false;
+const requestRenderFrame = window.requestAnimationFrame || function(cb){ return window.setTimeout(cb, 16); };
+
+function debugChat(message, detail){
+  console.log('[chat-debug]', message, detail || '');
+}
+
+function syncDashboardGlobals(){
+  window.MEMBERS = MEMBERS;
+  window.getDashboardAnswer = getDashboardAnswer;
+  window.getLocalAssistantReply = getLocalAssistantReply;
+}
+
+function uid(){ return 'm_' + Math.random().toString(36).slice(2,10); }
+function padRoleMonths(arr){
+  const a = (arr || []).slice(0, TOTAL_MEETINGS);
+  while(a.length < TOTAL_MEETINGS) a.push(null);
+  return a;
+}
+function padAttendance(arr){
+  const a = (arr || []).slice(0, TOTAL_MEETINGS);
+  while(a.length < TOTAL_MEETINGS) a.push(null);
+  return a;
+}
+function normalizeAttendanceValue(value){
+  if(value === 'Present' || value === 'Absent') return value;
+  return null;
+}
+function sanitizeText(value, fallback = ''){
+  const text = String(value == null ? '' : value).replace(/\s+/g, ' ').trim();
+  return text || fallback;
+}
+function sanitizeMemberField(field, value){
+  if(field === 'level'){
+    const parsed = parseInt(value, 10);
+    if(Number.isNaN(parsed)) return 1;
+    return Math.min(5, Math.max(1, parsed));
+  }
+  if(field === 'goal'){
+    const text = sanitizeText(value, '');
+    return text.replace(/^GOAL$/i, '').slice(0, 80);
+  }
+  if(field === 'mobile'){
+    return sanitizeText(value, '').slice(0, 30);
+  }
+  if(field === 'name'){
+    return sanitizeText(value, 'Member').slice(0, 120);
+  }
+  if(field === 'mentor' || field === 'iceTitle' || field === 'iceDate'){
+    return sanitizeText(value, '').slice(0, 120);
+  }
+  if(field === 'goalDesc'){
+    return sanitizeText(value, '').slice(0, 220);
+  }
+  return sanitizeText(value, null);
+}
+function normalizeMember(m, index){
+  const base = {
+    id: m.id || uid(),
+    name: m.name || `Member ${index + 1}`,
+    pathway: m.pathway || PATHWAYS[0],
+    level: m.level || 1,
+    mentor: m.mentor || '',
+    mobile: m.mobile || null,
+    iceTitle: m.iceTitle || null,
+    iceDate: m.iceDate || null,
+    roleMonths: padRoleMonths(m.roleMonths),
+    attendance: padAttendance((m.attendance || [])).map(normalizeAttendanceValue),
+    roleCount: m.roleCount || 0,
+    goal: m.goal || '',
+    goalDesc: m.goalDesc || '',
+    goalLevel: m.goalLevel || 1
+  };
+  base.roleCount = (base.roleMonths || []).filter(r => r && r.trim()).length;
+  return base;
+}
+function ensureIds(list){ return list.map((m, index) => normalizeMember(m, index)); }
+function escapeHtml(str){
+  if(str === null || str === undefined) return '';
+  return String(str).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function setHtml(id, html){ const el = document.getElementById(id); if(el){ el.innerHTML = html; } return el; }
+function setText(id, text){ const el = document.getElementById(id); if(el){ el.textContent = text; } return el; }
+
+function showSaveStatus(text){
+  const el = document.getElementById('saveStatus');
+  if(!el) return;
+  el.textContent = text;
+  el.classList.add('show');
+  clearTimeout(showSaveStatus._t);
+  showSaveStatus._t = setTimeout(()=> el.classList.remove('show'), 1300);
+}
+function getStorageApi(){
+  try{
+    return window.localStorage || null;
+  }catch(e){
+    return null;
+  }
+}
+function readStoredMembers(){
+  const storage = getStorageApi();
+  if(!storage) return null;
+  try{
+    return storage.getItem(STORAGE_KEY);
+  }catch(e){
+    return null;
+  }
+}
+function writeStoredMembers(payload){
+  const storage = getStorageApi();
+  if(!storage) return false;
+  try{
+    storage.setItem(STORAGE_KEY, payload);
+    return true;
+  }catch(e){
+    return false;
+  }
+}
+
+async function persist(){
+  try{
+    const payload = JSON.stringify(MEMBERS.map(m => ({ ...m, attendance: padAttendance((m.attendance || [])).map(normalizeAttendanceValue) })));
+    const ok = writeStoredMembers(payload);
+    if(!ok){ showSaveStatus('Save failed'); return false; }
+    showSaveStatus('Saved');
+    return true;
+  }catch(e){
+    showSaveStatus('Save failed');
+    return false;
+  }
+}
+
+async function loadMembers(){
+  const raw = readStoredMembers();
+  if(raw){
+    try{
+      MEMBERS = ensureIds(JSON.parse(raw));
+      return;
+    }catch(e){ }
+  }
+  MEMBERS = ensureIds(JSON.parse(JSON.stringify(SEED_MEMBERS)));
+  await persist();
+}
+
+function roleType(role){
+  if(!role) return 'empty';
+  if(role === 'TMOD') return 'tmod';
+  if(role.startsWith('Prepared Speaker')) return 'speaker';
+  if(role.includes('Evaluvator') || role.includes('Evaluator')) return 'eval';
+  return 'other';
+}
+function attendanceClass(value){
+  if(value === null || value === undefined || value === '') return 'empty';
+  if(value === 'Present') return 'present';
+  if(value === 'Absent') return 'absent';
+  if(value === 'Excused') return 'excused';
+  return 'empty';
+}
+function recomputeRoleCount(m){ m.roleCount = (m.roleMonths||[]).filter(r => r && r.trim()).length; }
+function getAttendanceValues(m){ return padAttendance((m.attendance || [])).map(normalizeAttendanceValue); }
+function getAverageAttendance(){
+  if(!MEMBERS.length) return 0;
+  const values = MEMBERS.flatMap(m => getAttendanceValues(m));
+  const count = values.filter(v => v !== null && v !== undefined && v !== '').length;
+  if(!count) return 0;
+  const presentCount = values.filter(v => v === 'Present').length;
+  return Math.round((presentCount / count) * 100);
+}
+function refreshDashboard(){
+  MEMBERS.forEach(recomputeRoleCount);
+  renderMeta();
+  renderKpis();
+  renderPathwayBars();
+  renderGoalBars();
+  renderHeatmap();
+  renderAttendanceTable();
+  renderSuggestions();
+  renderProgress();
+}
+function refreshRoster(){
+  renderPathwayFilterOptions();
+  renderRoster();
+}
+function refreshAll(){
+  refreshDashboard();
+  refreshRoster();
+}
+function scheduleRender(scope = 'all'){
+  if(renderFrame) return;
+  renderFrame = requestRenderFrame(() => {
+    renderFrame = null;
+    if(scope === 'dashboard') refreshDashboard();
+    else if(scope === 'roster') refreshRoster();
+    else refreshAll();
+  });
+}
+function renderAll(){
+  refreshAll();
+}
+
+function renderMeta(){
+  const total = MEMBERS.length;
+  const iceCompleted = MEMBERS.filter(m => m.iceTitle).length;
+  const avgRoles = total ? (MEMBERS.reduce((a,m)=>a+m.roleCount,0)/total).toFixed(1) : '0.0';
+  const missingMobile = MEMBERS.filter(m => !m.mobile).length;
+  setHtml('metaRow', `
+    <span><b>${total}</b> active members</span>
+    <span><b>${iceCompleted}</b> ice-breakers delivered</span>
+    <span><b>${avgRoles}</b> avg. roles / member</span>
+    <span><b>${missingMobile}</b> mentor contacts missing</span>`);
+}
+
+function renderKpis(){
+  const total = MEMBERS.length;
+  const iceCompleted = MEMBERS.filter(m => m.iceTitle).length;
+  const zeroRole = MEMBERS.filter(m => m.roleCount === 0).length;
+  const avgAttendance = getAverageAttendance();
+  setHtml('kpiRow', `
+    <div class="kpi"><div class="num">${total}</div><div class="lbl">Total Members</div></div>
+    <div class="kpi"><div class="num">${iceCompleted}/${total}</div><div class="lbl">Ice-Breakers Delivered</div></div>
+    <div class="kpi"><div class="num">${avgAttendance}%</div><div class="lbl">Average Attendance</div></div>
+    <div class="kpi"><div class="num">${zeroRole}</div><div class="lbl">Members With Zero Roles Taken</div></div>`);
+}
+
+function renderPathwayBars(){
+  const counts = {};
+  MEMBERS.forEach(m => counts[m.pathway] = (counts[m.pathway]||0)+1);
+  const entries = Object.entries(counts).sort((a,b)=>b[1]-a[1]);
+  const max = Math.max(1, ...entries.map(e=>e[1]));
+  setHtml('pathwayBars', entries.map(([name,count]) => `
+    <div class="bar-row"><div class="bar-label">${escapeHtml(name)}</div>
+    <div class="bar-track"><div class="bar-fill" style="width:${(count/max*100)}%"></div></div>
+    <div class="bar-count">${count}</div></div>`).join(''));
+  setText('pathwayNote', `${MEMBERS.length} members`);
+}
+
+function renderGoalBars(){
+  const counts = {};
+  MEMBERS.forEach(m => counts[m.goal || '—'] = (counts[m.goal || '—']||0)+1);
+  const keys = Object.keys(counts).sort();
+  const max = Math.max(1, ...keys.map(k=>counts[k]));
+  setHtml('goalBars', keys.map(name => `
+    <div class="bar-row"><div class="bar-label">${escapeHtml(name)}</div>
+    <div class="bar-track"><div class="bar-fill gold" style="width:${(counts[name]/max*100)}%"></div></div>
+    <div class="bar-count">${counts[name]}</div></div>`).join(''));
+}
+
+function renderHeatmap(){
+  let html = '<tr><th class="sticky-col">Member</th>' + Array.from({length:TOTAL_MEETINGS},(_,i)=>{
+    const groupStart = i % 5 === 0 && i !== 0 ? ' group-start' : '';
+    return `<th class="${groupStart}">M${String(i+1).padStart(2,'0')}</th>`;
+  }).join('') + '</tr>';
+  MEMBERS.forEach(m=>{
+    const isMe = m.name === ME;
+    html += `<tr class="${isMe ? 'me' : ''}"><td class="sticky-col">${escapeHtml(m.name)}</td>`;
+    padRoleMonths(m.roleMonths).forEach((role, idx)=>{
+      const type = roleType(role);
+      const groupStart = idx % 5 === 0 && idx !== 0 ? ' group-start' : '';
+      html += `<td class="${groupStart}"><span class="cell ${type}" contenteditable="true" data-id="${m.id}" data-idx="${idx}">${escapeHtml(role||'')}</span></td>`;
+    });
+    html += '</tr>';
+  });
+  setHtml('heatTable', html);
+}
+
+function renderPathwayFilterOptions(){
+  const sel = document.getElementById('filterPathway');
+  if(!sel) return;
+  const current = sel.value;
+  const pathways = [...new Set(MEMBERS.map(m=>m.pathway).filter(Boolean))].sort();
+  sel.innerHTML = '<option value="">All pathways</option>' + pathways.map(p=>`<option value="${escapeHtml(p)}">${escapeHtml(p)}</option>`).join('');
+  if(pathways.includes(current)) sel.value = current;
+}
+
+function pathwayOptionsHtml(selected){
+  const all = [...new Set([...PATHWAYS, selected].filter(Boolean))];
+  return all.map(p => `<option value="${escapeHtml(p)}" ${p===selected?'selected':''}>${escapeHtml(p)}</option>`).join('');
+}
+
+function renderAttendanceTable(){
+  const thead = '<tr><th class="sticky-col">Member</th>' + Array.from({length:TOTAL_MEETINGS},(_,i)=>`<th>M${String(i+1).padStart(2,'0')}</th>`).join('') + '</tr>';
+  const rows = MEMBERS.map(m=>{
+    const values = getAttendanceValues(m);
+    const cells = values.map((value, idx)=>{
+      const selected = value || '';
+      const stateClass = selected ? ` ${attendanceClass(value)}` : ' empty';
+      return `<td><div class="attendance-cell"><select class="attendance-select${stateClass}" data-attendance-id="${m.id}" data-attendance-idx="${idx}">
+        <option value="" ${selected ? '' : 'selected'}>—</option>
+        <option value="Present" ${selected === 'Present' ? 'selected' : ''}>Present</option>
+        <option value="Absent" ${selected === 'Absent' ? 'selected' : ''}>Absent</option>
+      </select></div></td>`;
+    }).join('');
+    return `<tr data-id="${m.id}"><td class="sticky-col">${escapeHtml(m.name)}</td>${cells}</tr>`;
+  }).join('');
+  setHtml('attendanceTable', thead + rows);
+}
+
+function renderSuggestions(){
+  const ranked = MEMBERS.map(m => ({
+    ...m,
+    score: (m.roleCount || 0) + (Number(m.level) || 0) + (m.iceTitle ? 1 : 0) + (m.attendance ? (m.attendance.filter(v => v === 'Present').length / Math.max(1, m.attendance.length)) : 0)
+  })).sort((a,b)=> b.score - a.score).slice(0, 6);
+  setHtml('suggestionsList', ranked.map(m => `
+    <button class="suggestion-card ${highlightedSuggestionId === m.id ? 'suggest-highlight' : ''}" data-suggestion-id="${m.id}">
+      <strong>${escapeHtml(m.name)}</strong>
+      <div class="meta"><span>${escapeHtml(m.pathway || '—')}</span><span>${escapeHtml(m.roleCount || 0)} roles • ${escapeHtml((m.attendance||[]).filter(v=>v==='Present').length)} present</span></div>
+    </button>`).join(''));
+}
+
+function renderProgress(){
+  const goalCount = MEMBERS.filter(m => m.goal && String(m.goal).toUpperCase() !== 'GOAL').length;
+  const iceCount = MEMBERS.filter(m => m.iceTitle).length;
+  const roleCount = MEMBERS.filter(m => (m.roleCount || 0) > 0).length;
+  const attendanceCount = MEMBERS.filter(m => getAttendanceValues(m).some(v => v === 'Present')).length;
+  const items = [
+    {label:'Ice Breaker', value: iceCount, total: MEMBERS.length, className:'gold'},
+    {label:'Roles', value: roleCount, total: MEMBERS.length},
+    {label:'CSP goals', value: goalCount, total: MEMBERS.length},
+    {label:'Attendance', value: attendanceCount, total: MEMBERS.length, className:'gold'}
+  ];
+  setHtml('progressList', items.map(item => `
+    <div class="progress-row">
+      <div class="progress-label">${escapeHtml(item.label)}</div>
+      <div class="progress-track"><div class="progress-fill ${item.className || ''}" style="width:${Math.round((item.value/item.total)*100)}%"></div></div>
+      <div class="count">${item.value}/${item.total}</div>
+    </div>`).join(''));
+}
+
+function renderRoster(){
+  const searchEl = document.getElementById('search');
+  const filterEl = document.getElementById('filterPathway');
+  const body = document.getElementById('rosterBody');
+  const countEl = document.getElementById('rosterCount');
+  if(!body || !countEl) return;
+  const q = (searchEl ? searchEl.value : '').toLowerCase();
+  const pf = filterEl ? filterEl.value : '';
+  let rows = MEMBERS.filter(m=>{
+    const matchQ = !q || (m.name||'').toLowerCase().includes(q) || (m.mentor||'').toLowerCase().includes(q);
+    const matchP = !pf || m.pathway === pf;
+    return matchQ && matchP;
+  });
+  rows.sort((a,b)=>{
+    let av = a[sortKey], bv = b[sortKey];
+    if(sortKey === 'iceStatus'){ av = a.iceTitle?1:0; bv = b.iceTitle?1:0; }
+    if(typeof av === 'string'){ av = av.toLowerCase(); bv = (bv||'').toLowerCase(); }
+    if(av === undefined || av === null) av = '';
+    if(bv === undefined || bv === null) bv = '';
+    if(av < bv) return -1*sortDir;
+    if(av > bv) return 1*sortDir;
+    return 0;
+  });
+
+  countEl.textContent = `${rows.length} shown`;
+  body.innerHTML = rows.map(m=>{
+    const isMe = m.name === ME;
+    const iceDot = m.iceTitle ? 'dot-done' : 'dot-pending';
+    return `
+      <tr class="${isMe ? 'me' : ''}" data-id="${m.id}">
+        <td><div class="cellwrap name" contenteditable="true" data-field="name" data-id="${m.id}">${escapeHtml(m.name)}</div></td>
+        <td class="pathway-td">
+          <select data-field="pathway" data-id="${m.id}">${pathwayOptionsHtml(m.pathway)}</select>
+          <span style="display:flex;align-items:center;gap:6px;padding:2px 8px;">
+            <span style="font-size:11px;color:var(--ink-soft);">Lv</span>
+            <input type="number" min="1" max="5" data-field="level" data-id="${m.id}" value="${m.level ?? ''}">
+          </span>
+        </td>
+        <td>
+          <div class="cellwrap" contenteditable="true" data-field="mentor" data-id="${m.id}">${escapeHtml(m.mentor)}</div>
+          <div class="cellwrap" contenteditable="true" data-field="mobile" data-id="${m.id}" style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:${m.mobile ? 'var(--ink-soft)' : 'var(--danger)'};">${escapeHtml(m.mobile) || 'no number — click to add'}</div>
+        </td>
+        <td><span class="tag">${m.roleCount} / ${TOTAL_MEETINGS}</span></td>
+        <td>
+          <div style="display:flex;align-items:flex-start;gap:6px;">
+            <span class="status-dot ${iceDot}" style="margin-top:9px;"></span>
+            <div style="flex:1;">
+              <div class="cellwrap" contenteditable="true" data-field="iceTitle" data-id="${m.id}" style="${m.iceTitle ? '' : 'color:var(--ink-soft);'}">${escapeHtml(m.iceTitle) || 'not scheduled — click to add'}</div>
+              <div class="cellwrap" contenteditable="true" data-field="iceDate" data-id="${m.id}" style="font-size:11.5px;color:var(--ink-soft);">${escapeHtml(m.iceDate) || 'date'}</div>
+            </div>
+          </div>
+        </td>
+        <td>
+          <div class="cellwrap" contenteditable="true" data-field="goal" data-id="${m.id}"><span class="tag goal-tag">${escapeHtml(m.goal) || 'GOAL'}</span></div>
+          <div class="cellwrap" contenteditable="true" data-field="goalDesc" data-id="${m.id}" style="font-size:11.5px;color:var(--ink-soft);">${escapeHtml(m.goalDesc) || 'description — click to add'}</div>
+        </td>
+        <td><button class="del-btn" data-id="${m.id}" title="Delete member">&times;</button></td>
+      </tr>`;
+  }).join('');
+}
+
+function getMember(id){ return MEMBERS.find(m=>m.id===id); }
+
+function refreshDerivedViews(){
+  scheduleRender('all');
+}
+
+document.getElementById('rosterBody').addEventListener('focusout', async (e)=>{
+  const el = e.target;
+  const field = el.dataset.field;
+  const id = el.dataset.id;
+  if(!field || !id) return;
+  const m = getMember(id);
+  if(!m) return;
+  const val = el.tagName === 'DIV' ? el.textContent : el.value;
+  const safeValue = sanitizeMemberField(field, val);
+  if(field === 'level'){ m.level = safeValue; }
+  else if(field === 'goal'){ m.goal = safeValue; }
+  else { m[field] = safeValue || null; }
+  await persist();
+  refreshDerivedViews();
+});
+
+document.getElementById('rosterBody').addEventListener('change', async (e)=>{
+  const el = e.target;
+  if(el.tagName !== 'SELECT') return;
+  const id = el.dataset.id;
+  const m = getMember(id);
+  if(!m) return;
+  const pathway = sanitizeText(el.value, PATHWAYS[0]);
+  m.pathway = PATHWAYS.includes(pathway) ? pathway : PATHWAYS[0];
+  await persist();
+  refreshDerivedViews();
+  renderPathwayFilterOptions();
+});
+
+document.getElementById('rosterBody').addEventListener('click', async (e)=>{
+  const btn = e.target.closest('.del-btn');
+  if(!btn) return;
+  const id = btn.dataset.id;
+  const m = getMember(id);
+  if(!m) return;
+  if(!confirm(`Delete ${m.name}? This cannot be undone.`)) return;
+  MEMBERS = MEMBERS.filter(x=>x.id!==id);
+  scheduleRender('all');
+  await persist();
+});
+
+document.getElementById('rosterBody').addEventListener('keydown', (e)=>{
+  if(e.target.matches('[contenteditable="true"]') && e.key === 'Enter'){
+    e.preventDefault();
+    e.target.blur();
+  }
+});
+
+document.getElementById('addMemberBtn').addEventListener('click', async ()=>{
+  const m = {
+    id: uid(), name: 'New Member', pathway: PATHWAYS[0], level: 1,
+    mentor: '', mobile: null, goal: '', goalDesc: '', goalLevel: 1,
+    iceTitle: null, iceDate: null, roleMonths: Array(TOTAL_MEETINGS).fill(null),
+    attendance: Array(TOTAL_MEETINGS).fill(null)
+  };
+  MEMBERS.push(normalizeMember(m, MEMBERS.length));
+  scheduleRender('all');
+  await persist();
+  const nameEl = document.querySelector(`tr[data-id="${m.id}"] .cellwrap.name`);
+  if(nameEl){
+    nameEl.focus();
+    const range = document.createRange();
+    range.selectNodeContents(nameEl);
+    const sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(range);
+  }
+});
+
+document.getElementById('resetBtn').addEventListener('click', async ()=>{
+  if(!confirm('Reset all data back to the original uploaded roster? Your edits will be lost.')) return;
+  MEMBERS = ensureIds(JSON.parse(JSON.stringify(SEED_MEMBERS)));
+  scheduleRender('all');
+  await persist();
+});
+
+document.getElementById('heatTable').addEventListener('focusout', async (e)=>{
+  const cell = e.target;
+  if(!cell.classList || !cell.classList.contains('cell')) return;
+  const id = cell.dataset.id;
+  const idx = parseInt(cell.dataset.idx,10);
+  const m = getMember(id);
+  if(!m) return;
+  const val = sanitizeText(cell.textContent, '').slice(0, 80);
+  m.roleMonths[idx] = val || null;
+  recomputeRoleCount(m);
+  refreshDerivedViews();
+  await persist();
+});
+document.getElementById('heatTable').addEventListener('keydown', (e)=>{
+  if(e.target.matches('.cell') && e.key === 'Enter'){ e.preventDefault(); e.target.blur(); }
+});
+
+document.getElementById('attendanceTable').addEventListener('change', async (e)=>{
+  const select = e.target.closest('.attendance-select');
+  if(!select) return;
+  const id = select.dataset.attendanceId;
+  const idx = parseInt(select.dataset.attendanceIdx,10);
+  const m = getMember(id);
+  if(!m) return;
+  const next = normalizeAttendanceValue(select.value);
+  if(!m.attendance) m.attendance = [];
+  m.attendance[idx] = next;
+  refreshDerivedViews();
+  await persist();
+});
+
+document.getElementById('suggestionsList').addEventListener('click', (e)=>{
+  const card = e.target.closest('.suggestion-card');
+  if(!card) return;
+  const id = card.dataset.suggestionId;
+  highlightedSuggestionId = id;
+  renderSuggestions();
+  document.querySelectorAll('tr[data-id]').forEach(row => row.classList.remove('suggest-highlight'));
+  const row = document.querySelector(`tr[data-id="${id}"]`);
+  if(row){
+    row.classList.add('suggest-highlight');
+    row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+});
+
+document.getElementById('exportExcelBtn').addEventListener('click', ()=>{
+  const summary = buildRosterSummary();
+  const rosterRows = summary.map(item => [item.name || '', item.pathway || '', item.level || '', item.mentor || '', item.mentorMobile || '', item.iceBreakerTitle || '', item.iceBreakerDate || '', item.roleCount || 0, item.cspGoal || '', item.cspGoalDescription || '', (item.attendance || []).join(' | ')]);
+  const rows = [['Name','Pathway','Level','Mentor','Mobile','Ice Title','Ice Date','Role Count','Goal','Goal Description','Attendance'], ...rosterRows];
+  if(window.XLSX && window.XLSX.utils && window.XLSX.writeFile){
+    try{
+      const wb = window.XLSX.utils.book_new();
+      const rosterWs = window.XLSX.utils.aoa_to_sheet(rows);
+      window.XLSX.utils.book_append_sheet(wb, rosterWs, 'Roster');
+      const roleWs = window.XLSX.utils.aoa_to_sheet(MEMBERS.map(m => [m.name || '', (m.roleMonths || []).join(' | ')]));
+      window.XLSX.utils.book_append_sheet(wb, roleWs, 'Role Participation');
+      const attendanceWs = window.XLSX.utils.aoa_to_sheet(MEMBERS.map(m => [m.name || '', ...(getAttendanceValues(m))]));
+      window.XLSX.utils.book_append_sheet(wb, attendanceWs, 'Attendance');
+      window.XLSX.writeFile(wb, 'Office_of_the_VPE.xlsx');
+      return;
+    }catch(e){ }
+  }
+  const csv = rows.map(r => r.map(v => '"' + String(v).replace(/"/g, '""') + '"').join(',')).join('\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'Office_of_the_VPE.csv';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+});
+
+document.getElementById('exportPdfBtn').addEventListener('click', ()=>{
+  try{
+    window.print();
+  }catch(e){
+    window.alert('Printing is not available in this browser right now.');
+  }
+});
+
+document.getElementById('search').addEventListener('input', ()=> scheduleRender('roster'));
+document.getElementById('filterPathway').addEventListener('change', ()=> scheduleRender('roster'));
+document.querySelectorAll('table.roster thead th[data-key]').forEach(th=>{
+  th.addEventListener('click', ()=>{
+    const key = th.dataset.key;
+    if(sortKey === key) sortDir *= -1; else { sortKey = key; sortDir = 1; }
+    scheduleRender('roster');
+  });
+});
+
+const chatToggle = document.getElementById('chatToggle');
+const chatPanel = document.getElementById('chatPanel');
+const chatMessages = document.getElementById('chatMessages');
+const chatInput = document.getElementById('chatInput');
+const chatSendBtn = document.getElementById('chatSendBtn');
+const chatSuggestions = document.getElementById('chatSuggestions');
+
+function initializeChatHandlers(){
+  if(chatInitialized) return;
+  if(!chatToggle || !chatPanel || !chatMessages || !chatInput || !chatSendBtn || !chatSuggestions){
+    debugChat('chat elements missing', { chatToggle: !!chatToggle, chatPanel: !!chatPanel, chatMessages: !!chatMessages, chatInput: !!chatInput, chatSendBtn: !!chatSendBtn, chatSuggestions: !!chatSuggestions });
+    return;
+  }
+
+  chatPanel.setAttribute('role', 'dialog');
+  chatPanel.setAttribute('aria-label', 'VPE assistant');
+
+  chatToggle.addEventListener('click', ()=>{
+    debugChat('chat toggle clicked');
+    console.log('Send clicked');
+    chatPanel.classList.add('open');
+    chatToggle.style.display = 'none';
+    chatToggle.setAttribute('aria-expanded', 'true');
+    chatInput.focus();
+    if(chatMessages.children.length === 0){
+      addBotMessage("Hi, I'm the VPE Assistant. Ask me anything about the roster — pathways, mentors, role participation, ice-breakers, or CSP goals.");
+    }
+  });
+
+  document.getElementById('chatCloseBtn').addEventListener('click', ()=>{
+    debugChat('chat close clicked');
+    chatPanel.classList.remove('open');
+    chatToggle.style.display = 'flex';
+    chatToggle.setAttribute('aria-expanded', 'false');
+  });
+
+  chatSendBtn.addEventListener('click', ()=>{
+    debugChat('send button clicked', chatInput.value);
+    console.log('Send clicked');
+    const q = sanitizeText(chatInput.value, '');
+    if(!q){
+      debugChat('empty input ignored');
+      return;
+    }
+    chatInput.value = '';
+    askAssistant(q);
+  });
+
+  chatInput.addEventListener('keydown', (e)=>{
+    if(e.key === 'Enter' && !e.shiftKey){
+      console.log('Enter key pressed');
+      debugChat('enter pressed');
+      e.preventDefault();
+      chatSendBtn.click();
+    }
+  });
+
+  chatSuggestions.addEventListener('click', (e)=>{
+    const chip = e.target.closest('.chip');
+    if(!chip) return;
+    debugChat('chip selected', chip.dataset.q);
+    askAssistant(chip.dataset.q);
+  });
+
+  chatInitialized = true;
+}
+
+function addUserMessage(text){
+  const div = document.createElement('div');
+  div.className = 'msg user';
+  div.textContent = text;
+  chatMessages.appendChild(div);
+  chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+function addBotMessage(text, cls){
+  const div = document.createElement('div');
+  div.className = 'msg bot' + (cls ? ' '+cls : '');
+  div.textContent = text;
+  chatMessages.appendChild(div);
+  chatMessages.scrollTop = chatMessages.scrollHeight;
+  return div;
+}
+
+function buildRosterSummary(){
+  return MEMBERS.map(m => ({
+    id: m.id,
+    name: m.name,
+    pathway: m.pathway,
+    level: m.level,
+    mentor: m.mentor,
+    mentorMobile: m.mobile,
+    rolesTaken: (m.roleMonths || []).map((r, i) => r ? `M${String(i + 1).padStart(2, '0')}: ${r}` : null).filter(Boolean),
+    roleCount: m.roleCount,
+    iceBreakerTitle: m.iceTitle,
+    iceBreakerDate: m.iceDate,
+    cspGoal: m.goal,
+    cspGoalDescription: m.goalDesc,
+    attendance: getAttendanceValues(m)
+  }));
+}
+
+function getMeetingStats(summary){
+  const totalMeetings = Math.max(1, (summary[0] && summary[0].attendance ? summary[0].attendance.length : TOTAL_MEETINGS));
+  const meetingStats = Array.from({ length: totalMeetings }, (_, idx) => ({
+    meeting: idx + 1,
+    present: 0,
+    absent: 0,
+    blank: 0
+  }));
+
+  summary.forEach(member => {
+    (member.attendance || []).forEach((value, idx) => {
+      if(!meetingStats[idx]) return;
+      if(value === 'Present') meetingStats[idx].present += 1;
+      else if(value === 'Absent') meetingStats[idx].absent += 1;
+      else meetingStats[idx].blank += 1;
+    });
+  });
+
+  const presentCount = meetingStats.reduce((sum, item) => sum + item.present, 0);
+  const absentCount = meetingStats.reduce((sum, item) => sum + item.absent, 0);
+  const blankCount = meetingStats.reduce((sum, item) => sum + item.blank, 0);
+  const totalEntries = presentCount + absentCount + blankCount;
+  const averageAttendance = totalEntries ? Math.round((presentCount / totalEntries) * 100) : 0;
+
+  return { meetingStats, presentCount, absentCount, blankCount, averageAttendance };
+}
+
+function getDashboardAnswer(question){
+  debugChat('getDashboardAnswer called', question);
+  const q = sanitizeText(question || '', '').toLowerCase();
+  if(!q){ return 'I couldn\'t find that information in the dashboard.'; }
+
+  const summary = buildRosterSummary();
+  const totalMembers = summary.length;
+  const attendanceValues = summary.map(item => ({
+    ...item,
+    presentCount: (item.attendance || []).filter(v => v === 'Present').length,
+    attendanceRate: ((item.attendance || []).filter(v => v === 'Present').length / Math.max(1, (item.attendance || []).length))
+  }));
+  const highestAttendance = attendanceValues.slice().sort((a, b) => b.presentCount - a.presentCount || a.name.localeCompare(b.name))[0];
+  const belowSixty = attendanceValues.filter(item => item.attendanceRate < 0.6).sort((a, b) => a.attendanceRate - b.attendanceRate);
+  const noRoles = summary.filter(item => (item.roleCount || 0) === 0);
+  const needsMentoring = summary.filter(item => !item.mentor || !item.mentorMobile || (item.roleCount || 0) === 0);
+  const missingContactInfo = summary.filter(item => !item.mentorMobile || !String(item.mentorMobile).trim());
+  const missingIceBreakers = summary.filter(item => !item.iceBreakerTitle || !String(item.iceBreakerTitle).trim());
+  const absentMeetingFive = summary.filter(item => (item.attendance || [])[4] === 'Absent').map(item => item.name);
+  const timerHolders = summary.filter(item => (item.rolesTaken || []).some(role => role.toLowerCase().includes('timer')));
+  const evaluatorHolders = summary.filter(item => (item.rolesTaken || []).some(role => role.toLowerCase().includes('evaluator')));
+  const speakerHolders = summary.filter(item => (item.rolesTaken || []).some(role => role.toLowerCase().includes('speaker')));
+  const completedLevelOne = summary.filter(item => (item.level || 0) >= 1);
+  const { meetingStats, presentCount, absentCount, blankCount, averageAttendance } = getMeetingStats(summary);
+  const topSpeakerCandidates = attendanceValues
+    .filter(item => !item.rolesTaken.some(role => role.toLowerCase().includes('prepared speaker')))
+    .sort((a, b) => b.presentCount - a.presentCount || a.name.localeCompare(b.name))
+    .slice(0, 5);
+
+  if((q.includes('highest attendance') || q.includes('best attendance') || q.includes('top attendance') || q.includes('who attended most') || q.includes('attended the most') || (q.includes('highest') && q.includes('attendance')) || (q.includes('best') && q.includes('attendance')) || (q.includes('top') && q.includes('attendance')))){ 
+    if(!highestAttendance) return 'I couldn\'t find that information in the dashboard.';
+    return `${highestAttendance.name} has the highest attendance with ${highestAttendance.presentCount} present marks.`;
+  }
+
+  if((q.includes('lowest attendance') || q.includes('lowest') && q.includes('attendance')) || (q.includes('least attendance') || q.includes('least') && q.includes('attendance'))){
+    const lowestAttendance = attendanceValues.slice().sort((a, b) => a.presentCount - b.presentCount || a.name.localeCompare(b.name))[0];
+    if(!lowestAttendance) return 'I couldn\'t find that information in the dashboard.';
+    return `${lowestAttendance.name} has the lowest attendance with ${lowestAttendance.presentCount} present marks.`;
+  }
+
+  if((q.includes('below') && (q.includes('60') || q.includes('attendance') || q.includes('threshold'))) || (q.includes('under') && q.includes('60'))){
+    if(!belowSixty.length) return 'No members are below 60% attendance.';
+    return `Members below 60% attendance: ${belowSixty.map(item => `${item.name} (${Math.round(item.attendanceRate * 100)}%)`).join(', ')}.`;
+  }
+
+  if((q.includes('never') && (q.includes('role') || q.includes('roles'))) || (q.includes('no role') || q.includes('no roles') || q.includes('zero roles') || (q.includes('without') && q.includes('role'))) || q.includes("hasn't taken any roles") || q.includes('has not taken any roles') || q.includes("hasn't taken a role") || q.includes('has not taken a role') || q.includes('no roles yet')){ 
+    if(!noRoles.length) return 'All members have taken at least one role.';
+    return `Members who have never taken a role: ${noRoles.map(item => item.name).join(', ')}.`;
+  }
+
+  if((q.includes('ice breaker') || q.includes('ice-breaker')) && (q.includes('missing') || q.includes('not') || q.includes('haven') || q.includes('without') || q.includes('none'))){
+    if(!missingIceBreakers.length) return 'All members have an ice-breaker speech recorded.';
+    return `Members missing an ice-breaker speech: ${missingIceBreakers.map(item => item.name).join(', ')}.`;
+  }
+
+  if((q.includes('mentor') || q.includes('mobile')) && (q.includes('missing') || q.includes('no') || q.includes('without')) && (q.includes('contact') || q.includes('mobile') || q.includes('number'))){
+    if(!missingContactInfo.length) return 'All mentors have a mobile number on file.';
+    return `Mentors without a mobile number on file: ${missingContactInfo.map(item => item.name).join(', ')}.`;
+  }
+
+  if((q.includes('active') && q.includes('member')) || (q.includes('how many members') && q.includes('active')) || q.includes('active members')){
+    return `There are ${totalMembers} active members in the dashboard.`;
+  }
+
+  if((q.includes('average attendance') || q.includes('avg attendance')) && !q.includes('meeting')){
+    return `The average attendance is ${averageAttendance}%.`;
+  }
+
+  if(q.includes('mentoring') || (q.includes('need') && q.includes('mentor'))){
+    if(!needsMentoring.length) return 'No members currently need mentoring based on the dashboard.';
+    return `Members who may need mentoring: ${needsMentoring.map(item => item.name).join(', ')}.`;
+  }
+
+  if(q.includes('absent') && q.includes('meeting 5')){
+    if(!absentMeetingFive.length) return 'No members were absent in Meeting 5.';
+    return `Members absent in Meeting 5: ${absentMeetingFive.join(', ')}.`;
+  }
+
+  if(q.includes('timer') && (q.includes('role') || q.includes('holder') || q.includes('holders'))){
+    if(!timerHolders.length) return 'No Timer role holders were found.';
+    return `Timer role holders: ${timerHolders.map(item => item.name).join(', ')}.`;
+  }
+
+  if(q.includes('evaluator') || q.includes('evaluators')){
+    if(!evaluatorHolders.length) return 'No evaluators were found.';
+    return `Evaluators: ${evaluatorHolders.map(item => item.name).join(', ')}.`;
+  }
+
+  if(q.includes('speaker') || q.includes('speakers')){
+    if(!speakerHolders.length) return 'No speakers were found.';
+    return `Speakers: ${speakerHolders.map(item => item.name).join(', ')}.`;
+  }
+
+  if((q.includes('level 1') || q.includes('completed level')) && q.includes('level')){
+    if(!completedLevelOne.length) return 'No members have completed Level 1 in the dashboard.';
+    return `Members at Level 1 or above: ${completedLevelOne.map(item => `${item.name} (Level ${item.level || 1})`).join(', ')}.`;
+  }
+
+  if(q.includes('meeting statistics') || (q.includes('meeting') && q.includes('statistics'))){
+    return `Meeting statistics: ${presentCount} present marks, ${absentCount} absent marks, ${blankCount} unrecorded entries across ${meetingStats.length} meetings. Average attendance is ${averageAttendance}%.`;
+  }
+
+  if(q.includes('speaker') && (q.includes('next meeting') || q.includes('suggest'))){
+    if(!topSpeakerCandidates.length) return 'No speaker suggestions were found.';
+    return `Suggested speakers for the next meeting: ${topSpeakerCandidates.map(item => item.name).join(', ')}.`;
+  }
+
+  if(q.includes('attendance')){
+    return `Attendance snapshot: ${summary.slice(0, 5).map(item => `${item.name}: ${item.attendance.filter(v => v === 'Present').length} present`).join('; ')}.`;
+  }
+
+  if(q.includes('role')){
+    return `There are ${totalMembers} members with ${summary.filter(item => (item.roleCount || 0) > 0).length} members who have taken at least one role.`;
+  }
+
+  if(q.includes('goal')){
+    return `Goal summary: ${summary.filter(item => item.cspGoal).slice(0, 5).map(item => `${item.name}: ${item.cspGoal}`).join('; ') || 'No goals recorded.'}`;
+  }
+
+  if(q.includes('pathway')){
+    return `Pathway snapshot: ${summary.slice(0, 6).map(item => `${item.name}: ${item.pathway || '—'}`).join('; ')}`;
+  }
+
+  return 'I couldn\'t find that information in the dashboard.';
+}
+
+function getLocalAssistantReply(question){
+  return getDashboardAnswer(question);
+}
+
+async function askAssistant(question){
+  debugChat('askAssistant called', question);
+  console.log('askAssistant called', question);
+  const safeQuestion = sanitizeText(question, '');
+  if(!safeQuestion){ return; }
+  chatSuggestions.style.display = 'none';
+  addUserMessage(safeQuestion);
+  chatHistory.push({role:'user', content: safeQuestion});
+  const thinkingEl = addBotMessage('Thinking…', 'thinking');
+  chatSendBtn.disabled = true;
+  try{
+    const text = getDashboardAnswer(safeQuestion);
+    debugChat('reply generated', text);
+    console.log('Dashboard answer generated', text);
+    thinkingEl.remove();
+    addBotMessage(text);
+    debugChat('reply appended to chat', text);
+    console.log('Reply appended', text);
+    chatHistory.push({role:'assistant', content: text});
+  }catch(err){
+    thinkingEl.remove();
+    addBotMessage('Something went wrong while preparing the assistant response.', 'error');
+  }finally{
+    chatSendBtn.disabled = false;
+  }
+}
+
+(async function init(){
+  await loadMembers();
+  debugChat('dashboard data loaded', { members: MEMBERS.length });
+  syncDashboardGlobals();
+  renderAll();
+  initializeChatHandlers();
+})();
+</script>
+</body>
+</html>
